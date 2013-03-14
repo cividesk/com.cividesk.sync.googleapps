@@ -99,10 +99,11 @@ class CRM_Sync_BAO_GoogleApps {
       if ( $result['is_error'] )
         return civicrm_api3_create_error( 'Could not create the custom fields set' );
       $params = reset($result['values']);
+      $params['version'] = 3;
       $params['title'] = 'Cividesk sync for Google Apps';
       $result = civicrm_api('CustomGroup', 'create', $params);
     }
-    return reset( $result['values'] );
+    return reset($result['values']);
   }
 
   static function get_customFields($group_id) {
