@@ -1,0 +1,11 @@
+{htxt id="oauth"}
+<p>{ts}There are multiple ways to obtain OAuth credentials from Google. By far the easiest, and recommended for this extension, is the first one indicated in the list below. In all cases this will only work with Google Apps for Business and Education accounts, so if you have a free Google Apps account you will need to upgrade.{/ts}</p>
+<ul>
+  <li><strong>{ts}Domain credentials{/ts}</strong><br />
+    {ts}Go to https://www.google.com/a/cpanel/<strong>yourdomain.org</strong>/SetupOAuth, click the 'Enable this consumer key' and 'Allow access to all APIs' checkboxes, hit the 'Save changes' button and then copy the OAuth consumer key and secrets into this form.{/ts}</li>
+  <li><strong>{ts}Internal application{/ts}</strong><br />
+    {ts}You will need to first create a project in the <a href="https://code.google.com/apis/console">Google API console</a>. Then, follow these <a href=">http://support.google.com/a/bin/answer.py?hl=en&answer=162106">instructions</a> to configure your domain. The scope needed for authorization is 'http(s)://www.google.com/m8/feeds/', but this may change in the future as we expand the features of this extension.{/ts}</li>
+  <li><strong>{ts}Marketplace application{/ts}</strong><br />
+    {ts}This method is not recommended for this extension. If you still want to use it, you will need to create a marketplace application, related OAuth credentials, and then install this application in the target domain(s).{/ts}</li>
+</ul>
+{/htxt}
