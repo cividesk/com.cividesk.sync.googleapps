@@ -176,8 +176,8 @@ class CRM_Admin_Form_Setting_GoogleApps extends CRM_Admin_Form_Setting {
     // Check emailing
     if ($params['subscribed'] != $this->_values['subscribed']) {
       if ($params['subscribed']) {
-        if (CRM_Core_Cividesk::register("GoogleApps sync", $params['subscribed'])) {
-          CRM_Core_Session::setStatus(ts('Thanks, we will send you email updates related to this extension.'));
+        if (CRM_Core_Cividesk::subscribe("GoogleApps sync", $params['subscribed'])) {
+          CRM_Core_Session::setStatus(ts('We will send you email updates related to this extension.'));
         } else {
           $params['subscribed'] = '';
           CRM_Core_Session::setStatus(ts('Sorry, there was an error when subscribing. Please retry later.'));

@@ -44,7 +44,7 @@ class CRM_Sync_BAO_GoogleApps {
      * CiviCRM configuration
      */
     $this->_custom_group = $this->get_customGroup();
-    $this->_custom_fields = $this->get_customFields();
+    $this->_custom_fields = $this->get_customFields($this->_custom_group);
 
     /**
      * GoogleApps configuration & includes
@@ -159,7 +159,7 @@ class CRM_Sync_BAO_GoogleApps {
   static function get_scheduledJob() {
     // The Job API is not implemented yet, so use DAO
     $dao = new CRM_Core_DAO_Job();
-    $dao->domain_id  = 1;
+    $dao->domain_id  = CRM_Core_Config::domainID();
     $dao->api_prefix = 'civicrm_api3';
     $dao->api_entity = 'Job';
     $dao->api_action = 'googleapps_sync';
@@ -190,7 +190,7 @@ class CRM_Sync_BAO_GoogleApps {
     $this->_scope = $scope;
   }
 
-  function call($object, $op, $params) {
+  function call($object, $op, $params = array()) {
     // Check authentication and scope
     if (empty($this->_handle) || empty($this->_scope)) {
       throw new Exception('You need to initialize the scope before calling Google Apps.');
