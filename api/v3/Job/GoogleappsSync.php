@@ -22,13 +22,13 @@ function civicrm_api3_job_googleapps_sync($params) {
   // And launch the query ... starting from civicrm_log table since this is where we'll have the least records to look at
   $query = "
       INSERT INTO " . CRM_Sync_BAO_GoogleApps::GOOGLEAPPS_QUEUE_TABLE_NAME . "
-        (civicrm_contact_id, google_contact_id, first_name, last_name, organization, job_title, email, email_location_id, phone, phone_ext, phone_location_id, is_deleted)
+        (civicrm_contact_id, google_contact_id, first_name, last_name, organization, job_title, email, email_location_id, email_is_primary, phone, phone_ext, phone_type_id, phone_location_id, phone_is_primary, is_deleted)
         SELECT
             contact_a.id, custom_gapps." . $custom_fields['google_id']['column_name'] . ",
             contact_a.first_name, contact_a.last_name,
             contact_b.organization_name, contact_a.job_title,
-            email.email, email.location_type_id,
-            phone.phone, phone.phone_ext, phone.location_type_id,
+            email.email, email.location_type_id as email_location_type_id, email.is_primary as email_is_primary,
+            phone.phone, phone.phone_ext, phone.phone_type_id, phone.location_type_id as phone_location_type_id, phone.is_primary as phone_is_primary,
             contact_a.is_deleted
         FROM civicrm_log log
             INNER JOIN civicrm_contact contact_a ON log.entity_id=contact_a.id
@@ -36,7 +36,7 @@ function civicrm_api3_job_googleapps_sync($params) {
             LEFT JOIN civicrm_contact contact_b ON contact_b.id = rel.contact_id_b
             LEFT JOIN civicrm_email email ON email.contact_id=contact_a.id AND email.is_primary=1
             LEFT JOIN civicrm_phone phone ON phone.contact_id=contact_a.id AND phone.is_primary=1
-            LEFT JOIN " . $custom_group[table_name] . " custom_gapps ON custom_gapps.entity_id=contact_a.id
+            LEFT JOIN " . $custom_group['table_name'] . " custom_gapps ON custom_gapps.entity_id=contact_a.id
         WHERE
             log.entity_table = 'civicrm_contact' AND log.modified_date > \"" . $last_sync ."\"
             AND contact_a.contact_type = 'Individual'

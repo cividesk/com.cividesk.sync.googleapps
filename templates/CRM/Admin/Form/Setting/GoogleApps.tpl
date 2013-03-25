@@ -80,8 +80,7 @@
   <p>{ts}To search CiviCRM contacts in Google, go to the Contacts apps and select 'Directory'.{/ts}
      {ts}Newly synch'ed contacts will take up to 24 hours to appear in Google due to their cache refresh policy.{/ts}
      {ts}You can install third-party applications such as
-         '<a href="http://www.google.com/enterprise/marketplace/viewListing?productListingId=8056+6131117756098622400">Easy Shared Contacts</a>,
-         '<a href="http://www.google.com/enterprise/marketplace/viewListing?productListingId=2333+5834727858349999229">Netkiller Shared Contacts</a> or
+         '<a href="http://www.google.com/enterprise/marketplace/viewListing?productListingId=8056+6131117756098622400">Easy Shared Contacts</a> or
          '<a href="http://www.google.com/enterprise/marketplace/viewListing?productListingId=6723+662574286124949443">Smart Contacts Manager</a>'
          to see updates in real-time.{/ts}</p>
   <p>{ts}To search CiviCRM contacts on an iPhone, use the Contacts application, click the 'Groups' button up top and select 'Global Address List' from your Google account.{/ts}</p>

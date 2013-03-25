@@ -231,8 +231,8 @@ class CRM_Sync_BAO_GoogleApps {
           preg_match('/(.*)\/(.*)/', $result->id, $matches);
           $result = $matches[2]; // return the Google_id
           $query = "
-INSERT INTO ".$this->_custom_group[table_name]."
-  (entity_id,".$this->_custom_fields[google_id][column_name].",".$this->_custom_fields[last_sync][column_name].")
+INSERT INTO `{$this->_custom_group['table_name']}`
+  (entity_id,{$this->_custom_fields['google_id']['column_name']},{$this->_custom_fields['last_sync']['column_name']})
 VALUES
   ($params[civicrm_contact_id],'$matches[2]','$now')";
           CRM_Core_DAO::executeQuery($query);
@@ -242,16 +242,16 @@ VALUES
         $xml = $this->_objectXML($object, $params);
         if ($result = $this->_handle->updateEntry($xml, $query->getQueryUrl())) {
           $query = "
-UPDATE ".$this->_custom_group['table_name']."
-   SET ".$this->_custom_fields['last_sync']['column_name']." = '$now'
- WHERE ".$this->_custom_fields['google_id']['column_name']." = '$params[google_contact_id]'";
+UPDATE `{$this->_custom_group['table_name']}`
+   SET {$this->_custom_fields['last_sync']['column_name']} = '$now'
+ WHERE {$this->_custom_fields['google_id']['column_name']} = '$params[google_contact_id]'";
           CRM_Core_DAO::executeQuery($query);
         }
         break;
       case 'delete':
         if ($result = $this->_handle->delete($query->getQueryUrl())) {
           $query = "
-DELETE FROM ".$this->_custom_group['table_name']."
+DELETE FROM `{$this->_custom_group['table_name']}`
  WHERE entity_id = $params[civicrm_contact_id]";
           CRM_Core_DAO::executeQuery($query);
         }
@@ -324,19 +324,39 @@ DELETE FROM ".$this->_custom_group['table_name']."
       else
         $type = 'other';
       $email->setAttribute('rel' ,'http://schemas.google.com/g/2005#'.$type);
+      if ($contact['email_is_primary']) {
+        $email->setAttribute('primary' ,'true');
+      }
       $email->setAttribute('address' , $contact['email']);
       $entry->appendChild($email);
     }
     // add telephone element
     if ($contact['phone']) {
       $tel = $doc->createElement('gd:phoneNumber', $contact['phone'].($contact['phone_ext']?' x'.$contact['phone_ext']:''));
-      if ($contact['phone_location_id'] == 1)
-        $type = 'home';
-      else if ($contact['phone_location_id'] == 2)
-        $type = 'work';
+      // Map CiviCRM type/location values to Google values
+      // see https://developers.google.com/gdata/docs/1.0/elements#gdPhoneNumber
+      // Google has: home, home_fax, work, work_fax, fax, mobile, pager and other
+      if ($contact['phone_location_id'] == 1) // home
+        $location = 'home';
+      else if ($contact['phone_location_id'] == 2) // work
+        $location = 'work';
+      else
+        $location = 'other';
+      if ($contact['phone_type_id'] == 1) // phone
+        $type = $location;
+      else if ($contact['phone_type_id'] == 2) // mobile
+        $type = 'mobile';
+      if ($contact['phone_type_id'] == 3) // fax
+        $type = ($location == 'other' ? 'fax' : $location . '_fax');
+      else if ($contact['phone_type_id'] == 4) // pager
+        $type = 'pager';
       else
         $type = 'other';
+
       $tel->setAttribute('rel' ,'http://schemas.google.com/g/2005#'.$type);
+      if ($contact['phone_is_primary']) {
+        $tel->setAttribute('primary' ,'true');
+      }
       $entry->appendChild($tel);
     }
 

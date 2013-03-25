@@ -7,7 +7,10 @@ require_once 'googleapps.civix.php';
  */
 function googleapps_civicrm_config(&$config) {
   _googleapps_civix_civicrm_config($config);
+  // Include path is not working if relying only on the above function
+  // seems to be a side-effect of CRM_Core_Smarty::singleton(); also calling config hook
   $extRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+  set_include_path($extRoot . PATH_SEPARATOR . get_include_path());
   if (is_dir($extRoot . 'packages')) {
     set_include_path($extRoot . 'packages' . PATH_SEPARATOR . get_include_path());
   }
@@ -27,7 +30,7 @@ function googleapps_civicrm_xmlMenu(&$files) {
  */
 function googleapps_civicrm_install() {
   // required to define the CONST below
-  googleapps_civicrm_config();
+  googleapps_civicrm_config(CRM_Core_Config::singleton());
   require_once 'CRM/Sync/BAO/GoogleApps.php';
   // Create sync queue table if not exists
   $query = "
@@ -40,15 +43,18 @@ function googleapps_civicrm_install() {
           `organization` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
           `job_title` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
           `email` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-          `email_location_id` int(10) DEFAULT NULL,
+          `email_location_id` int(10) UNSIGNED DEFAULT NULL,
+          `email_is_primary` tinyint(4) DEFAULT '0',
           `phone` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
           `phone_ext` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-          `phone_location_id` int(10) DEFAULT NULL,
+          `phone_type_id` int(10) UNSIGNED DEFAULT NULL,
+          `phone_location_id` int(10) UNSIGNED DEFAULT NULL,
+          `phone_is_primary` tinyint(4) DEFAULT '0',
           `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
       PRIMARY KEY (`id`),
       KEY `civicrm_contact_id` (`civicrm_contact_id`),
       KEY `google_contact_id` (`google_contact_id`)
-    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
   CRM_Core_DAO::executeQuery($query);
   return _googleapps_civix_civicrm_install();
 }
@@ -58,15 +64,20 @@ function googleapps_civicrm_install() {
  */
 function googleapps_civicrm_uninstall() {
   // required to define the CONST below
-  googleapps_civicrm_config();
+  googleapps_civicrm_config(CRM_Core_Config::singleton());
   require_once 'CRM/Sync/BAO/GoogleApps.php';
   // Delete scheduled job
   $scheduledJob = CRM_Sync_BAO_GoogleApps::get_scheduledJob();
   $scheduledJob->delete();
   // Delete custom group & fields
   $custom_group = CRM_Sync_BAO_GoogleApps::get_customGroup();
-  $custom_group['version'] = 3;
-  $result = civicrm_api('CustomGroup', 'delete', $custom_group);
+  $custom_fields = CRM_Sync_BAO_GoogleApps::get_customFields($custom_group);
+  foreach ($custom_fields as $custom_field) {
+    $params = array('version' => 3, 'id' => $custom_field['id']);
+    $result = civicrm_api('CustomField', 'delete', $params);
+  }
+  $params = array('version' => 3, 'id' => $custom_group['id']);
+  $result = civicrm_api('CustomGroup', 'delete', $params);
   // Drop sync queue table
   $query = "DROP TABLE IF EXISTS `" . CRM_Sync_BAO_GoogleApps::GOOGLEAPPS_QUEUE_TABLE_NAME . "`;";
   CRM_Core_DAO::executeQuery($query);
@@ -80,6 +91,7 @@ function googleapps_civicrm_uninstall() {
  */
 function googleapps_civicrm_enable() {
   // Create and enable custom group
+  googleapps_civicrm_config(CRM_Core_Config::singleton());
   $params = CRM_Sync_BAO_GoogleApps::get_customGroup();
   $params['version'] = 3;
   $params['is_active'] = 1;
@@ -128,7 +140,7 @@ function googleapps_civicrm_managed(&$entities) {
  * Implementation of hook_civicrm_navigationMenu
  */
 function googleapps_civicrm_navigationMenu( &$params ) {
-  googleapps_civicrm_config();
+  googleapps_civicrm_config(CRM_Core_Config::singleton());
   // Add menu entry for extension administration page
   _googleapps_insert_navigationMenu($params, 'Administer/System Settings', array(
     'name'       => 'Cividesk sync for Google Apps',
