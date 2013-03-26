@@ -336,19 +336,21 @@ DELETE FROM `{$this->_custom_group['table_name']}`
       // Map CiviCRM type/location values to Google values
       // see https://developers.google.com/gdata/docs/1.0/elements#gdPhoneNumber
       // Google has: home, home_fax, work, work_fax, fax, mobile, pager and other
+      // Phone numbers of type 'other' are not pushed to iPhones
+      // see http://support.google.com/mail/bin/answer.py?hl=en&answer=139635
       if ($contact['phone_location_id'] == 1) // home
         $location = 'home';
-      else if ($contact['phone_location_id'] == 2) // work
+      else if (in_array($contact['phone_location_id'], array(2, 3, 5))) // work, main or billing
         $location = 'work';
       else
         $location = 'other';
       if ($contact['phone_type_id'] == 1) // phone
         $type = $location;
-      else if ($contact['phone_type_id'] == 2) // mobile
+      elseif ($contact['phone_type_id'] == 2) // mobile
         $type = 'mobile';
-      if ($contact['phone_type_id'] == 3) // fax
+      elseif ($contact['phone_type_id'] == 3) // fax
         $type = ($location == 'other' ? 'fax' : $location . '_fax');
-      else if ($contact['phone_type_id'] == 4) // pager
+      elseif ($contact['phone_type_id'] == 4) // pager
         $type = 'pager';
       else
         $type = 'other';
