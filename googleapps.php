@@ -1,6 +1,24 @@
 <?php
-
+/*
+ +--------------------------------------------------------------------------+
+ | Copyright IT Bliss LLC (c) 2012-2013                                     |
+ +--------------------------------------------------------------------------+
+ | This program is free software: you can redistribute it and/or modify     |
+ | it under the terms of the GNU Affero General Public License as published |
+ | by the Free Software Foundation, either version 3 of the License, or     |
+ | (at your option) any later version.                                      |
+ |                                                                          |
+ | This program is distributed in the hope that it will be useful,          |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of           |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            |
+ | GNU Affero General Public License for more details.                      |
+ |                                                                          |
+ | You should have received a copy of the GNU Affero General Public License |
+ | along with this program.  If not, see <http://www.gnu.org/licenses/>.    |
+ +--------------------------------------------------------------------------+
+*/
 require_once 'googleapps.civix.php';
+require_once 'cividesk.ext.php';
 
 /**
  * Implementation of hook_civicrm_config
@@ -98,6 +116,11 @@ function googleapps_civicrm_enable() {
   $result = civicrm_api('CustomGroup', 'create', $params);
   // Create custom fields in this group
   $custom_fields = CRM_Sync_BAO_GoogleApps::get_customFields($params['id']);
+  // Reminder to go to the configuration screen
+  CRM_Core_Session::setStatus(
+    ts('Extension enabled. Please go to the <a href="%1">setup screen</a> to configure it.',
+      array(1 => CRM_Utils_System::url('civicrm/admin/sync/googleapps')))
+  );
   return _googleapps_civix_civicrm_enable();
 }
 
@@ -142,7 +165,7 @@ function googleapps_civicrm_managed(&$entities) {
 function googleapps_civicrm_navigationMenu( &$params ) {
   googleapps_civicrm_config(CRM_Core_Config::singleton());
   // Add menu entry for extension administration page
-  _googleapps_insert_navigationMenu($params, 'Administer/System Settings', array(
+  _cividesk_insert_navigationMenu($params, 'Administer/System Settings', array(
     'name'       => 'Cividesk sync for Google Apps',
     'url'        => 'civicrm/admin/sync/googleapps',
     'permission' => 'administer CiviCRM',
@@ -152,62 +175,31 @@ function googleapps_civicrm_navigationMenu( &$params ) {
   $settings = CRM_Sync_BAO_GoogleApps::getSettings();
   if (CRM_Utils_Array::value('domain', $settings)) {
     // Add menu entry for More submenu
-    $ok = _googleapps_insert_navigationMenu($params, '', array(
+    $ok = _cividesk_insert_navigationMenu($params, '', array(
       'name'       => 'More',
     ));
     // And then all childs
     if ($ok) {
-      _googleapps_insert_navigationMenu($params, 'More', array(
+      _cividesk_insert_navigationMenu($params, 'More', array(
         'name'      => 'Google Mail',
         'url'       => 'http://mail.google.com/a/'.$settings['domain'],
         'target'    => 'gmail',
       ));
-      _googleapps_insert_navigationMenu($params, 'More', array(
+      _cividesk_insert_navigationMenu($params, 'More', array(
         'name'      => 'Google Calendar',
         'url'       => 'http://www.google.com/calendar/hosted/'.$settings['domain'],
         'target'    => 'gcalendar',
       ));
-      _googleapps_insert_navigationMenu($params, 'More', array(
+      _cividesk_insert_navigationMenu($params, 'More', array(
         'name'      => 'Google Docs',
         'url'       => 'http://docs.google.com/a/'.$settings['domain'],
         'target'    => 'gdocs',
       ));
-      _googleapps_insert_navigationMenu($params, 'More', array(
+      _cividesk_insert_navigationMenu($params, 'More', array(
         'name'      => 'Google Contacts',
         'url'       => 'http://www.google.com/contacts/a/'.$settings['domain'],
         'target'    => 'gcontacts',
       ));
     }
-  }
-}
-
-function _googleapps_insert_navigationMenu(&$menu, $path, $item, $parentId = null) {
-  static $navId;
-
-  // If we are done going down the path, insert menu
-  if (empty($path)) {
-    if (!$navId) $navId = CRM_Core_DAO::singleValueQuery("SELECT max(id) FROM civicrm_navigation");
-    $navId ++;
-    $menu[$navId] = array (
-      'attributes' => array_merge($item, array(
-        'label'      => CRM_Utils_Array::value('name', $item),
-        'active'     => 1,
-        'parentID'   => $parentId,
-        'navID'      => $navId,
-      ))
-    );
-    return true;
-  } else {
-    // Find an recurse into the next level down
-    $found = false;
-    $path = explode('/', $path);
-    $first = array_shift($path);
-    foreach ($menu as $key => &$entry) {
-      if ($entry['attributes']['label'] == $first) {
-        if (!$entry['child']) $entry['child'] = array();
-        $found = _googleapps_insert_navigationMenu($entry['child'], implode('/', $path), $item, $key);
-      }
-    }
-    return $found;
   }
 }

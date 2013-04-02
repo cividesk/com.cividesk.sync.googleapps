@@ -1,27 +1,20 @@
 {*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
+ +--------------------------------------------------------------------------+
+ | Copyright IT Bliss LLC (c) 2012-2013                                     |
+ +--------------------------------------------------------------------------+
+ | This program is free software: you can redistribute it and/or modify     |
+ | it under the terms of the GNU Affero General Public License as published |
+ | by the Free Software Foundation, either version 3 of the License, or     |
+ | (at your option) any later version.                                      |
+ |                                                                          |
+ | This program is distributed in the hope that it will be useful,          |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of           |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            |
+ | GNU Affero General Public License for more details.                      |
+ |                                                                          |
+ | You should have received a copy of the GNU Affero General Public License |
+ | along with this program.  If not, see <http://www.gnu.org/licenses/>.    |
+ +--------------------------------------------------------------------------+
 *}
 {* this template is used for setting-up the Cividesk Google Apps Sync extension *}
 <div class="form-item">
@@ -58,12 +51,12 @@
 {if $registered eq false}
       <tr class="crm-cividesk-sync-googleapps-form-block">
         <td class="label">{$form.register.label}</td>
-        <td>{$form.register.html}</td>
+        <td>{$form.register.html} {help id="register"}</td>
     </tr>
 {/if}
     <tr class="crm-cividesk-sync-googleapps-form-block">
         <td class="label">{$form.subscribed.label}</td>
-        <td>{$form.subscribed.html}</td>
+        <td>{$form.subscribed.html} {help id="subscribe"}</td>
     </tr>
   </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

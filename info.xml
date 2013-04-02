@@ -3,14 +3,14 @@
   <file>googleapps</file>
   <name>Cividesk sync for Google Apps</name>
   <description>This extension syncs the contacts in CiviCRM with the Contacts Directory in Google Apps.</description>
-  <license>GNU Affero General Public License, version 3</license>
+  <license>GNU AGPL-3.0</license>
   <maintainer>
     <author>Nicolas Ganivet</author>
     <email>nicolas@cividesk.com</email>
   </maintainer>
-  <releaseDate>2013-02-04</releaseDate>
+  <releaseDate>2013-04-02</releaseDate>
   <version>1.0</version>
-  <develStage>beta</develStage>
+  <develStage>stable</develStage>
   <compatibility>
     <ver>4.2</ver>
   </compatibility>

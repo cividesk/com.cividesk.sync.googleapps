@@ -1,43 +1,23 @@
 <?php
-
 /*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
+ +--------------------------------------------------------------------------+
+ | Copyright IT Bliss LLC (c) 2012-2013                                     |
+ +--------------------------------------------------------------------------+
+ | This program is free software: you can redistribute it and/or modify     |
+ | it under the terms of the GNU Affero General Public License as published |
+ | by the Free Software Foundation, either version 3 of the License, or     |
+ | (at your option) any later version.                                      |
+ |                                                                          |
+ | This program is distributed in the hope that it will be useful,          |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of           |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            |
+ | GNU Affero General Public License for more details.                      |
+ |                                                                          |
+ | You should have received a copy of the GNU Affero General Public License |
+ | along with this program.  If not, see <http://www.gnu.org/licenses/>.    |
+ +--------------------------------------------------------------------------+
 */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
- * $Id$
- *
- */
-
-/**
- * This class generates form components for Location Type
- *
- */
 class CRM_Admin_Form_Setting_GoogleApps extends CRM_Admin_Form_Setting {
   protected $_values;
   protected $_oauth_ok;
@@ -168,16 +148,23 @@ class CRM_Admin_Form_Setting_GoogleApps extends CRM_Admin_Form_Setting {
 
     // Check registration
     if ($params['register']) {
-      if (CRM_Core_Cividesk::register("GoogleApps sync")) {
+      $result = CRM_Core_Cividesk::register("GoogleApps sync");
+      if (CRM_Utils_Array::value('success', $result)) {
         CRM_Sync_BAO_GoogleApps::setSetting(true, 'registered');
         CRM_Core_Session::setStatus(ts('Thank you for registering with Cividesk.'));
+      } else {
+        CRM_Core_Session::setStatus(ts('Sorry, there was an error when registering. Please retry later.'));
       }
     }
     // Check emailing
     if ($params['subscribed'] != $this->_values['subscribed']) {
       if ($params['subscribed']) {
-        if (CRM_Core_Cividesk::subscribe("GoogleApps sync", $params['subscribed'])) {
-          CRM_Core_Session::setStatus(ts('We will send you email updates related to this extension.'));
+        $result = CRM_Core_Cividesk::subscribe("GoogleApps sync", $params['subscribed']);
+        if (CRM_Utils_Array::value('success', $result)) {
+          CRM_Core_Session::setStatus(
+            ts("We will send '%1' email updates related to this extension.",
+              array(1 => $params['subscribed']))
+          );
         } else {
           $params['subscribed'] = '';
           CRM_Core_Session::setStatus(ts('Sorry, there was an error when subscribing. Please retry later.'));
