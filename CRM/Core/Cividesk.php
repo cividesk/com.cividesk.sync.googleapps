@@ -90,7 +90,7 @@ class CRM_Core_Cividesk {
 
     switch ($format) {
       case 'json':
-        $r = json_decode($res);
+        $r = json_decode($res, true);
         if ($r === null) return false;
         return $r;
 

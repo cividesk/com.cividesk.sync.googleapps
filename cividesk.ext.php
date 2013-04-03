@@ -56,7 +56,7 @@ function _cividesk_insert_navigationMenu(&$menu, $path, $item, $parentId = null)
     foreach ($menu as $key => &$entry) {
       if ($entry['attributes']['label'] == $first) {
         if (!$entry['child']) $entry['child'] = array();
-        $found = _googleapps_insert_navigationMenu($entry['child'], implode('/', $path), $item, $key);
+        $found = _cividesk_insert_navigationMenu($entry['child'], implode('/', $path), $item, $key);
       }
     }
     return $found;
