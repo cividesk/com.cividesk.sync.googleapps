@@ -62,7 +62,7 @@ class CRM_Sync_BAO_GoogleApps {
      * CiviCRM configuration
      */
     $this->_custom_group = $this->get_customGroup();
-    $this->_custom_fields = $this->get_customFields($this->_custom_group);
+    $this->_custom_fields = $this->get_customFields($this->_custom_group['id']);
 
     /**
      * GoogleApps configuration & includes
