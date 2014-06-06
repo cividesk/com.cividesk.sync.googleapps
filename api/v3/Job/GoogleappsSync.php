@@ -37,29 +37,71 @@ function civicrm_api3_job_googleapps_sync($params) {
    */
   // Get the last sync from the system preferences
   $last_sync = CRM_Utils_Array::value('last_sync', $settings, '2000-01-01 00:00:00');
-  // And launch the query ... starting from civicrm_log table since this is where we'll have the least records to look at
+  if ($sync_group_id = CRM_Utils_Array::value('group_id', $settings)) {
+    // We are synching just a group
+    // Refresh smart group cache
+    CRM_Contact_BAO_GroupContactCache::loadAll($sync_group_id);
+    $smart_group_list = $sync_group_id;
+    $query = "
+      INSERT INTO " . CRM_Sync_BAO_GoogleApps::GOOGLEAPPS_QUEUE_TABLE_NAME . "
+        (civicrm_contact_id, google_contact_id, first_name, last_name, organization, job_title, email, email_location_id, email_is_primary, phone, phone_ext, phone_type_id, phone_location_id, phone_is_primary, is_deleted)"
+    // First insert members of smart group that have been modified since last sync OR have never been synchronized
+     ." SELECT
+            contact.id, custom_gapps.{$custom_fields['google_id']['column_name']},
+            contact.first_name, contact.last_name, contact.organization_name, contact.job_title,
+            email.email, email.location_type_id as email_location_type_id, email.is_primary as email_is_primary,
+            phone.phone, phone.phone_ext, phone.phone_type_id, phone.location_type_id as phone_location_type_id, phone.is_primary as phone_is_primary,
+            contact.is_deleted
+        FROM civicrm_contact contact
+            INNER JOIN civicrm_group_contact_cache gcc ON gcc.group_id IN ($smart_group_list) AND gcc.contact_id = contact.id
+            LEFT JOIN civicrm_log log ON entity_table = 'civicrm_contact' AND log.entity_id = contact.id
+            LEFT JOIN {$custom_group['table_name']} custom_gapps ON custom_gapps.entity_id = contact.id
+            LEFT JOIN civicrm_email email ON email.contact_id = contact.id AND email.is_primary = 1
+            LEFT JOIN civicrm_phone phone ON phone.contact_id = contact.id AND phone.is_primary = 1
+        WHERE
+            contact.contact_type = 'Individual'
+            AND (log.modified_date > \"$last_sync\"
+                 OR (contact.is_deleted = 0 AND custom_gapps.{$custom_fields['google_id']['column_name']} IS NULL)
+                 OR (contact.is_deleted = 1 AND custom_gapps.{$custom_fields['google_id']['column_name']} IS NOT NULL))
+        GROUP BY
+            contact.id"
+    // Then insert contacts that have been synch'ed but are no longer part of the smart group for deleting them
+   ." UNION
+        SELECT
+            custom_gapps.entity_id, custom_gapps.{$custom_fields['google_id']['column_name']},
+            NULL, NULL, NULL, NULL,
+            NULL, NULL, NULL,
+            NULL, NULL, NULL, NULL, NULL,
+            1
+        FROM {$custom_group['table_name']} custom_gapps
+            LEFT JOIN civicrm_group_contact_cache gcc ON group_id IN ($smart_group_list) AND gcc.contact_id = custom_gapps.entity_id
+        WHERE
+            custom_gapps.{$custom_fields['google_id']['column_name']} IS NOT NULL
+            AND gcc.contact_id IS NULL";
+  } else {
+    // We are synching all contacts
+    // And launch the query ... starting from civicrm_log table since this is where we'll have the least records to look at
   $query = "
       INSERT INTO " . CRM_Sync_BAO_GoogleApps::GOOGLEAPPS_QUEUE_TABLE_NAME . "
         (civicrm_contact_id, google_contact_id, first_name, last_name, organization, job_title, email, email_location_id, email_is_primary, phone, phone_ext, phone_type_id, phone_location_id, phone_is_primary, is_deleted)
         SELECT
-            contact_a.id, custom_gapps." . $custom_fields['google_id']['column_name'] . ",
-            contact_a.first_name, contact_a.last_name,
-            contact_b.organization_name, contact_a.job_title,
+            contact.id, custom_gapps.{$custom_fields['google_id']['column_name']},
+            contact.first_name, contact.last_name, contact.organization_name, contact.job_title,
             email.email, email.location_type_id as email_location_type_id, email.is_primary as email_is_primary,
             phone.phone, phone.phone_ext, phone.phone_type_id, phone.location_type_id as phone_location_type_id, phone.is_primary as phone_is_primary,
-            contact_a.is_deleted
-        FROM civicrm_log log
-            INNER JOIN civicrm_contact contact_a ON log.entity_id=contact_a.id
-            LEFT JOIN civicrm_relationship rel ON rel.contact_id_a = contact_a.id AND rel.relationship_type_id = 4 AND rel.is_active = 1
-            LEFT JOIN civicrm_contact contact_b ON contact_b.id = rel.contact_id_b
-            LEFT JOIN civicrm_email email ON email.contact_id=contact_a.id AND email.is_primary=1
-            LEFT JOIN civicrm_phone phone ON phone.contact_id=contact_a.id AND phone.is_primary=1
-            LEFT JOIN " . $custom_group['table_name'] . " custom_gapps ON custom_gapps.entity_id=contact_a.id
+            contact.is_deleted
+        FROM civicrm_contact contact
+            INNER JOIN civicrm_log log ON log.entity_table = 'civicrm_contact' AND log.entity_id = contact.id
+            LEFT JOIN civicrm_email email ON email.contact_id = contact.id AND email.is_primary = 1
+            LEFT JOIN civicrm_phone phone ON phone.contact_id = contact.id AND phone.is_primary = 1
+            LEFT JOIN {$custom_group['table_name']} custom_gapps ON custom_gapps.entity_id = contact.id
         WHERE
-            log.entity_table = 'civicrm_contact' AND log.modified_date > \"" . $last_sync ."\"
-            AND contact_a.contact_type = 'Individual'
+            contact.contact_type = 'Individual'
+            AND log.modified_date > \"$last_sync\"
         GROUP BY
-            contact_a.id";
+            contact.id";
+  }
+
   CRM_Core_DAO::executeQuery( $query );
   // TODO: catch errors
   CRM_Sync_BAO_GoogleApps::setSetting(date('Y-m-d H:m:s'), 'last_sync');
