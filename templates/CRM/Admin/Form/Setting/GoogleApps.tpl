@@ -48,16 +48,7 @@
         <td>{ts}OAuth authentication and secrets fully configured and working.{/ts}</td>
     </tr>
 {/if}
-{if $registered eq false}
-      <tr class="crm-cividesk-sync-googleapps-form-block">
-        <td class="label">{$form.register.label}</td>
-        <td>{$form.register.html} {help id="register"}</td>
-    </tr>
-{/if}
-    <tr class="crm-cividesk-sync-googleapps-form-block">
-        <td class="label">{$form.subscribed.label}</td>
-        <td>{$form.subscribed.html} {help id="subscribe"}</td>
-    </tr>
+
   </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div></fieldset>
