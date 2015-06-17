@@ -285,7 +285,6 @@ DELETE FROM `{$this->_custom_group['table_name']}`
 
     // normalize all contact elements to the right format for DOM & Google
     foreach ($contact as $key => &$value) {
-      $value = utf8_encode($value);
       $value = str_replace('&','&amp;',$value);
     }
     // create new entry
@@ -305,7 +304,9 @@ DELETE FROM `{$this->_custom_group['table_name']}`
 
     // add link back to CiviCRM
     $link = $doc->createElement('gContact:website');
-    $link->setAttribute('href', CIVICRM_UF_BASEURL.'index.php?q=civicrm/contact/view&reset=1&cid='.$contact['civicrm_contact_id']);
+    $link->setAttribute('href', CRM_Utils_System::url('civicrm/contact/view',
+      "reset=1&cid={$contact['civicrm_contact_id']}",
+      TRUE, NULL, FALSE));
     $link->setAttribute('rel' ,'profile');
     $entry->appendChild($link);
     // add name element
@@ -380,7 +381,7 @@ DELETE FROM `{$this->_custom_group['table_name']}`
       $entry->appendChild($tel);
     }
 
-    // last minute adjustements on the saved document
+    // last minute adjustments on the saved document
     return $doc->saveXML();
   }
 }
