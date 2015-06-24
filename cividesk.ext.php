@@ -33,7 +33,7 @@
  */
 
 function _cividesk_insert_navigationMenu(&$menu, $path, $item, $parentId = null) {
-  static $navId;
+  global $navId;
 
   // If we are done going down the path, insert menu
   if (empty($path)) {

@@ -249,7 +249,7 @@ class CRM_Sync_BAO_GoogleApps {
           preg_match('/(.*)\/(.*)/', $result->id, $matches);
           $result = $matches[2]; // return the Google_id
           $query = "
-INSERT INTO `{$this->_custom_group['table_name']}`
+INSERT IGNORE INTO `{$this->_custom_group['table_name']}`
   (entity_id,{$this->_custom_fields['google_id']['column_name']},{$this->_custom_fields['last_sync']['column_name']})
 VALUES
   ($params[civicrm_contact_id],'$matches[2]','$now')";

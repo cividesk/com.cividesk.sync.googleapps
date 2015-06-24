@@ -171,7 +171,7 @@ DELETE FROM ".CRM_Sync_BAO_GoogleApps::GOOGLEAPPS_QUEUE_TABLE_NAME."
       }
     }
   } catch (Exception $e) {
-    return civicrm_api3_create_error(ts('Google API error - either the extension is not fully configured or there is a database mismatch.'));
+    return civicrm_api3_create_error(ts('Google API error - either the extension is not fully configured or there is a database mismatch.' . $e->getMessage()));
   }
 
   // all done, create summary
